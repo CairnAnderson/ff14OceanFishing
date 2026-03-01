@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>FF14 オーシャンフィッシング運行表＆餌メモ</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#111a33;
+      --card2:#0f1730;
+      --text:#eaf0ff;
+      --muted:#a9b7e6;
+      --line:rgba(255,255,255,.12);
+      --good:#7dffb3;
+      --warn:#ffd27d;
+      --bad:#ff7d7d;
+      --accent:#7db4ff;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Hiragino Sans","Noto Sans JP","Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 700px at 30% -10%, rgba(125,180,255,.18), transparent 55%),
+                  radial-gradient(900px 600px at 85% 20%, rgba(125,255,179,.10), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding: 18px 16px 10px;
+      position: sticky;
+      top:0;
+      backdrop-filter: blur(14px);
+      background: rgba(11,16,32,.72);
+      border-bottom: 1px solid var(--line);
+      z-index: 5;
+    }
+    .title{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+    }
+    h1{
+      font-size: 18px;
+      margin:0;
+      letter-spacing:.02em;
+    }
+    .sub{
+      margin-top:6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height:1.35;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    main{ padding: 12px 16px 24px; max-width: 980px; margin: 0 auto; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 12px;
+    }
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .card .hd h2{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.02em;
+    }
+    .card .bd{ padding: 12px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    select, input, textarea, button{
+      font: inherit;
+      color: var(--text);
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      padding: 10px 12px;
+      outline: none;
+    }
+    select, input{ height: 40px; }
+    textarea{ width:100%; min-height: 92px; resize: vertical; }
+    button{
+      cursor:pointer;
+      transition: transform .03s ease, background .15s ease;
+    }
+    button:active{ transform: translateY(1px); }
+    button.primary{ background: rgba(125,180,255,.18); border-color: rgba(125,180,255,.35); }
+    button.ghost{ background: rgba(255,255,255,.04); }
+    button.danger{ background: rgba(255,125,125,.14); border-color: rgba(255,125,125,.35); }
+    .muted{ color: var(--muted); font-size: 12px; line-height:1.45; }
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.12);
+    }
+    .table th,.table td{
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      vertical-align: top;
+    }
+    .table th{
+      text-align:left;
+      color: var(--muted);
+      font-weight: 600;
+      background: rgba(255,255,255,.04);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .tag{
+      display:inline-flex; align-items:center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      font-size: 12px;
+      color: var(--muted);
+      margin-right:6px;
+      margin-top:4px;
+    }
+    .time{
+      font-variant-numeric: tabular-nums;
+      font-weight: 650;
+    }
+    .countdown{
+      font-variant-numeric: tabular-nums;
+      color: var(--good);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .small{
+      font-size:12px;
+      color: var(--muted);
+    }
+    .split{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(15,23,48,.92);
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      color: var(--text);
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 999;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+    .hint{
+      border-left: 3px solid rgba(125,180,255,.6);
+      padding: 10px 12px;
+      background: rgba(125,180,255,.08);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      padding: 1px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="title">
+    <div>
+      <h1>FF14 オーシャンフィッシング｜運行表＆餌メモ</h1>
+      <div class="sub">
+        JST基準（出港：奇数時の毎2時間）で次の便を自動表示。餌はあなた用に編集して保存できます。
+      </div>
+    </div>
+    <div class="pill" id="nowPill">現在時刻（JST）：--:--</div>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <!-- LEFT: schedule -->
+    <section class="card">
+      <div class="hd">
+        <h2>次の出港（JST）</h2>
+        <div class="row">
+          <label class="small">表示件数</label>
+          <select id="countSel">
+            <option value="6">6便</option>
+            <option value="12" selected>12便</option>
+            <option value="24">24便</option>
+          </select>
+          <button class="ghost" id="refreshBtn" title="手動更新">更新</button>
+        </div>
+      </div>
+      <div class="bd">
+        <table class="table" aria-label="運行表">
+          <thead>
+            <tr>
+              <th style="width: 33%;">出港</th>
+              <th style="width: 27%;">カウント</th>
+              <th>餌（この便で使うもの）</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleBody"></tbody>
+        </table>
+
+        <div style="margin-top:10px" class="hint">
+          ここで出る「餌」は、右側の <span class="kbd">餌プリセット</span> にあるメモをそのまま表示してるよ。<br/>
+          ルート最適化（スペクトラル/直感狙い）は人によって違うので、あなたの運用に合わせて書き換えて育てるのが前提。
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: bait presets -->
+    <section class="card">
+      <div class="hd">
+        <h2>餌プリセット（編集して保存）</h2>
+        <div class="row">
+          <button class="primary" id="saveBtn">保存</button>
+          <button class="ghost" id="exportBtn">書き出し</button>
+          <button class="danger" id="resetBtn" title="初期値に戻す">リセット</button>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="split">
+          <div class="row">
+            <label class="small">便（ルート）</label>
+            <select id="routeSel"></select>
+          </div>
+
+          <div>
+            <div class="muted" style="margin-bottom:8px">
+              この便で「持っていく餌」を改行区切りで書いてね（例：Krill / Ragworm / Plump Worm）。<br/>
+              ※初期値は汎用の叩き台。スペクトラル狙いは地域で変わることがあります。  [oai_citation:2‡Reddit](https://www.reddit.com/r/ffxiv/comments/1406w5d/very_short_ocean_fishing_guide_for_big_points_on/?utm_source=chatgpt.com)
+            </div>
+            <textarea id="baitText" placeholder="この便で使う餌メモ（改行区切り）"></textarea>
+          </div>
+
+          <div class="muted">
+            出港計算ロジックは、Lulu’s Toolsの「JSTで2時間毎・奇数時」説明に合わせてます。  [oai_citation:3‡Lulu’s Tools](https://ffxiv.pf-n.co/ocean-fishing/about)
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast">保存しました</div>
+</main>
+
+<script>
+(() => {
+  // ---- Ocean Fishing departure times (JST)
+  // Leaves every 2 hours on odd hours in JST.  [oai_citation:4‡Lulu’s Tools](https://ffxiv.pf-n.co/ocean-fishing/about)
+  const JST_OFFSET_MIN = 9 * 60;
+
+  function toJstDate(date = new Date()){
+    // Convert local Date -> a Date object representing "same instant", but we'll format using UTC parts + JST offset
+    // We'll compute via epoch + offset and then read UTC fields.
+    return new Date(date.getTime() + JST_OFFSET_MIN * 60 * 1000);
+  }
+
+  function fmtJstHM(date){
+    const d = toJstDate(date);
+    const hh = String(d.getUTCHours()).padStart(2,'0');
+    const mm = String(d.getUTCMinutes()).padStart(2,'0');
+    return `${hh}:${mm}`;
+  }
+
+  function fmtJstFull(date){
+    const d = toJstDate(date);
+    const y = d.getUTCFullYear();
+    const m = String(d.getUTCMonth()+1).padStart(2,'0');
+    const da = String(d.getUTCDate()).padStart(2,'0');
+    const hh = String(d.getUTCHours()).padStart(2,'0');
+    const mm = String(d.getUTCMinutes()).padStart(2,'0');
+    return `${y}/${m}/${da} ${hh}:${mm}`;
+  }
+
+  function nextDepartureAfter(now = new Date()){
+    // Find the next odd-hour boundary at :00 where hour is odd, step=2 hours.
+    const j = toJstDate(now);
+    // work in "JST expressed as UTC fields"
+    let y = j.getUTCFullYear(), mo = j.getUTCMonth(), da = j.getUTCDate();
+    let hh = j.getUTCHours(), mm = j.getUTCMinutes();
+
+    // candidate at current hour :00
+    // if we're past :00, move to next hour
+    if (mm > 0 || j.getUTCSeconds() > 0 || j.getUTCMilliseconds() > 0){
+      // advance to next full hour
+      const adv = new Date(Date.UTC(y, mo, da, hh, 0, 0, 0));
+      adv.setUTCHours(adv.getUTCHours() + 1);
+      y = adv.getUTCFullYear(); mo = adv.getUTCMonth(); da = adv.getUTCDate();
+      hh = adv.getUTCHours();
+    }
+
+    // Ensure hour is odd
+    if (hh % 2 === 0){
+      hh += 1;
+    }
+
+    // Create "JST-as-UTC" time, then convert back to real instant by subtracting offset.
+    const jstAsUtc = new Date(Date.UTC(y, mo, da, hh, 0, 0, 0));
+    const realInstant = new Date(jstAsUtc.getTime() - JST_OFFSET_MIN * 60 * 1000);
+    return realInstant;
+  }
+
+  function addHours(date, hours){
+    return new Date(date.getTime() + hours * 60 * 60 * 1000);
+  }
+
+  function humanCountdown(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    const h = Math.floor(s/3600);
+    const m = Math.floor((s%3600)/60);
+    const sec = s%60;
+    if (h > 0) return `${h}時間${String(m).padStart(2,'0')}分`;
+    if (m > 0) return `${m}分${String(sec).padStart(2,'0')}秒`;
+    return `${sec}秒`;
+  }
+
+  // ---- Bait presets (editable)
+  // This is intentionally "user-owned": you can tailor it to your own strategy.
+  // Default is a generic baseline using common ocean baits.  [oai_citation:5‡Reddit](https://www.reddit.com/r/ffxiv/comments/1406w5d/very_short_ocean_fishing_guide_for_big_points_on/?utm_source=chatgpt.com)
+  const DEFAULT_PRESETS = {
+    "便A（メモ枠）": ["Krill","Ragworm","Plump Worm"],
+    "便B（メモ枠）": ["Krill","Ragworm","Plump Worm"],
+    "便C（メモ枠）": ["Krill","Ragworm","Plump Worm"],
+    "便D（メモ枠）": ["Krill","Ragworm","Plump Worm"],
+  };
+
+  // You can rename these route labels later (e.g., 「ガラディオン湾便」「ルビー海便」など)
+  // without breaking anything; presets are keyed by the label.
+  const STORAGE_KEY = "of_bait_presets_v1";
+
+  function loadPresets(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return structuredClone(DEFAULT_PRESETS);
+      const obj = JSON.parse(raw);
+      if (!obj || typeof obj !== "object") return structuredClone(DEFAULT_PRESETS);
+      return obj;
+    }catch(_){
+      return structuredClone(DEFAULT_PRESETS);
+    }
+  }
+
+  function savePresets(p){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+  }
+
+  function toast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 1200);
+  }
+
+  // ---- UI Wiring
+  const nowPill = document.getElementById("nowPill");
+  const scheduleBody = document.getElementById("scheduleBody");
+  const countSel = document.getElementById("countSel");
+  const refreshBtn = document.getElementById("refreshBtn");
+
+  const routeSel = document.getElementById("routeSel");
+  const baitText = document.getElementById("baitText");
+  const saveBtn = document.getElementById("saveBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const exportBtn = document.getElementById("exportBtn");
+
+  let presets = loadPresets();
+
+  function rebuildRouteOptions(){
+    routeSel.innerHTML = "";
+    Object.keys(presets).forEach((k) => {
+      const opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = k;
+      routeSel.appendChild(opt);
+    });
+    if (routeSel.options.length === 0){
+      presets = structuredClone(DEFAULT_PRESETS);
+      rebuildRouteOptions();
+      return;
+    }
+  }
+
+  function loadSelectedPreset(){
+    const key = routeSel.value;
+    const lines = (presets[key] || []).join("\n");
+    baitText.value = lines;
+  }
+
+  function writeSelectedPreset(){
+    const key = routeSel.value;
+    const lines = baitText.value
+      .split("\n")
+      .map(s => s.trim())
+      .filter(Boolean);
+    presets[key] = lines;
+  }
+
+  function renderSchedule(){
+    const now = new Date();
+    nowPill.textContent = `現在時刻（JST）：${fmtJstHM(now)}`;
+
+    const n = Number(countSel.value || 12);
+    const first = nextDepartureAfter(now);
+
+    // We'll rotate through preset labels just to give each row something sensible.
+    // If you want strict "route identification", we can later swap this for real route IDs.
+    const keys = Object.keys(presets);
+    const fallbackKeys = Object.keys(DEFAULT_PRESETS);
+    const listKeys = keys.length ? keys : fallbackKeys;
+
+    scheduleBody.innerHTML = "";
+
+    for (let i=0; i<n; i++){
+      const dep = addHours(first, i*2);
+      const ms = dep.getTime() - now.getTime();
+      const key = listKeys[i % listKeys.length];
+      const baits = presets[key] || [];
+
+      const tr = document.createElement("tr");
+
+      const tdTime = document.createElement("td");
+      tdTime.innerHTML = `<div class="time">${fmtJstFull(dep)}</div><div class="small">${key}</div>`;
+      tr.appendChild(tdTime);
+
+      const tdCd = document.createElement("td");
+      tdCd.innerHTML = `<div class="countdown">${humanCountdown(ms)}</div><div class="small">（出港まで）</div>`;
+      tr.appendChild(tdCd);
+
+      const tdBait = document.createElement("td");
+      if (!baits.length){
+        tdBait.innerHTML = `<span class="tag">（未設定）</span><span class="small">右で入力して保存</span>`;
+      }else{
+        tdBait.innerHTML = baits.map(x => `<span class="tag">${escapeHtml(x)}</span>`).join("");
+      }
+      tr.appendChild(tdBait);
+
+      scheduleBody.appendChild(tr);
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // events
+  routeSel.addEventListener("change", () => loadSelectedPreset());
+
+  saveBtn.addEventListener("click", () => {
+    writeSelectedPreset();
+    savePresets(presets);
+    toast("保存しました");
+    renderSchedule();
+  });
+
+  resetBtn.addEventListener("click", () => {
+    presets = structuredClone(DEFAULT_PRESETS);
+    savePresets(presets);
+    rebuildRouteOptions();
+    routeSel.selectedIndex = 0;
+    loadSelectedPreset();
+    toast("初期値に戻しました");
+    renderSchedule();
+  });
+
+  exportBtn.addEventListener("click", async () => {
+    writeSelectedPreset();
+    const json = JSON.stringify(presets, null, 2);
+    try{
+      await navigator.clipboard.writeText(json);
+      toast("JSONをコピーしました");
+    }catch(_){
+      // fallback
+      const blob = new Blob([json], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "oceanfishing_baits.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("JSONを書き出しました");
+    }
+  });
+
+  refreshBtn.addEventListener("click", () => renderSchedule());
+  countSel.addEventListener("change", () => renderSchedule());
+
+  // init
+  rebuildRouteOptions();
+  routeSel.selectedIndex = 0;
+  loadSelectedPreset();
+  renderSchedule();
+
+  // auto refresh every 15s (countdown feels alive)
+  setInterval(renderSchedule, 15000);
+})();
+</script>
+</body>
+</html>
