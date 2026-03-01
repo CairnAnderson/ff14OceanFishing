@@ -25,9 +25,11 @@ def fetch_text(url:str)->str:
         return r.read().decode("utf-8", errors="replace")
 
 def parse_gviz(text:str)->dict:
-    m = re.search(r"setResponse\\((.*)\\);\\s*$", text, flags=re.S)
+    # google.visualization.Query.setResponse({...});
+    m = re.search(r"setResponse\((.*)\);\s*$", text, flags=re.S)
     if not m:
-        raise ValueError("gviz response format not recognized")
+        head = text[:400].replace("\n", "\\n")
+        raise ValueError(f"gviz response format not recognized. head={head}")
     return json.loads(m.group(1))
 
 def cell(c):
@@ -37,7 +39,7 @@ def cell(c):
     return v
 
 def norm(s)->str:
-    return re.sub(r"\\s+"," ", str(s or "").lower()).strip()
+    return re.sub(r"\s+"," ", str(s or "").lower()).strip()
 
 def is_route(v)->bool:
     return isinstance(v, str) and ROUTE_RE.fullmatch(v.strip()) is not None
@@ -68,9 +70,9 @@ def find_cols(cols, pats):
 
 def pick_route_name(cols, row):
     cs = row.get("c", [])
-    s1c = find_cols(cols, [r"stop\\s*1", r"1st", r"第一", r"①"])
-    s2c = find_cols(cols, [r"stop\\s*2", r"2nd", r"第二", r"②"])
-    s3c = find_cols(cols, [r"stop\\s*3", r"3rd", r"第三", r"③"])
+    s1c = find_cols(cols, [r"stop\s*1", r"1st", r"第一", r"①"])
+    s2c = find_cols(cols, [r"stop\s*2", r"2nd", r"第二", r"②"])
+    s3c = find_cols(cols, [r"stop\s*3", r"3rd", r"第三", r"③"])
     def first(idxs):
         for i in idxs:
             v = cell(cs[i]) if i < len(cs) else None
@@ -91,9 +93,9 @@ def extract_baits(cols, row):
         v = cell(cs[i]) if i < len(cs) else None
         if not isinstance(v,str) or not v.strip(): continue
         v=v.strip()
-        if re.search(r"stop\\s*1|\\b1\\b|1st|第一|①", hn): stop["stop1"]=v
-        elif re.search(r"stop\\s*2|\\b2\\b|2nd|第二|②", hn): stop["stop2"]=v
-        elif re.search(r"stop\\s*3|\\b3\\b|3rd|第三|③", hn): stop["stop3"]=v
+        if re.search(r"stop\s*1|\b1\b|1st|第一|①", hn): stop["stop1"]=v
+        elif re.search(r"stop\s*2|\b2\b|2nd|第二|②", hn): stop["stop2"]=v
+        elif re.search(r"stop\s*3|\b3\b|3rd|第三|③", hn): stop["stop3"]=v
         else: bucket.append(v)
     for k in ("stop1","stop2","stop3"):
         if stop[k] is None and bucket:
